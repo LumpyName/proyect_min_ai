@@ -1,5 +1,7 @@
 import pygame
 
+ESCALA_TANQUE = 0.6  # Ajustá este valor (1.0 = tamaño actual)
+
 class Tanque:
     """Clase para dibujar y personalizar un tanque con vista aérea"""
     
@@ -39,59 +41,50 @@ class Tanque:
             self.color_orugas = color_orugas
         if color_cañon is not None:
             self.color_cañon = color_cañon
-    
+
     def draw(self, screen, x, y):
-        """
-        Dibuja el tanque en la pantalla
-        
-        Args:
-            screen: Superficie de pygame donde dibujar
-            x: Coordenada X del centro del tanque
-            y: Coordenada Y del centro del tanque
-        """
-        # Orugas (rectángulos a los lados)
-        # Oruga izquierda
-        pygame.draw.rect(screen, self.color_orugas, (x - 45, y - 50, 15, 100))
-        # Oruga derecha
-        pygame.draw.rect(screen, self.color_orugas, (x + 30, y - 50, 15, 100))
-        
-        # Cuerpo principal del tanque (rectángulo)
+        s = ESCALA_TANQUE  # usa la constante global
+
+        # Orugas
+        pygame.draw.rect(screen, self.color_orugas, (x - 45*s, y - 50*s, 15*s, 100*s))
+        pygame.draw.rect(screen, self.color_orugas, (x + 30*s, y - 50*s, 15*s, 100*s))
+
+        # Cuerpo
         body = [
-            (x - 30, y - 50),  # superior izquierda
-            (x + 30, y - 50),  # superior derecha
-            (x + 30, y + 50),  # inferior derecha
-            (x - 30, y + 50)   # inferior izquierda
+            (x - 30*s, y - 50*s),
+            (x + 30*s, y - 50*s),
+            (x + 30*s, y + 50*s),
+            (x - 30*s, y + 50*s)
         ]
         pygame.draw.polygon(screen, self.color_cuerpo, body)
         pygame.draw.polygon(screen, self.color_borde, body, 2)
-        
-        # Torreta (octágono/círculo simplificado en el centro)
+
+        # Torreta
         turret = [
-            (x - 20, y - 10),
-            (x - 14, y - 20),
-            (x + 14, y - 20),
-            (x + 20, y - 10),
-            (x + 20, y + 10),
-            (x + 14, y + 20),
-            (x - 14, y + 20),
-            (x - 20, y + 10)
+            (x - 20*s, y - 10*s),
+            (x - 14*s, y - 20*s),
+            (x + 14*s, y - 20*s),
+            (x + 20*s, y - 10*s),
+            (x + 20*s, y + 10*s),
+            (x + 14*s, y + 20*s),
+            (x - 14*s, y + 20*s),
+            (x - 20*s, y + 10*s)
         ]
         pygame.draw.polygon(screen, self.color_torreta, turret)
         pygame.draw.polygon(screen, self.color_borde, turret, 2)
-        
-        # Cañón (rectángulo apuntando hacia arriba)
+
+        # Cañón
         cannon = [
-            (x - 5, y - 20),   # base izquierda
-            (x + 5, y - 20),   # base derecha
-            (x + 5, y - 60),   # punta derecha
-            (x - 5, y - 60)    # punta izquierda
+            (x - 5*s, y - 20*s),
+            (x + 5*s, y - 20*s),
+            (x + 5*s, y - 60*s),
+            (x - 5*s, y - 60*s)
         ]
         pygame.draw.polygon(screen, self.color_cañon, cannon)
         pygame.draw.polygon(screen, self.color_borde, cannon, 2)
-        
-        # Escotilla (círculo pequeño en la torreta)
-        pygame.draw.circle(screen, self.color_borde, (x, y), 6)
 
+        # Escotilla
+        pygame.draw.circle(screen, self.color_borde, (x, y), 6*s)
 
 # Temas predefinidos
 TEMA_VERDE = {
