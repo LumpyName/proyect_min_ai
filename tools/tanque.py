@@ -1,5 +1,7 @@
 import pygame
 
+from .vector2d import Vector2D
+
 ESCALA_TANQUE = 0.6  # Ajustá este valor (1.0 = tamaño actual)
 
 class Tanque:
@@ -21,7 +23,12 @@ class Tanque:
         self.color_orugas = color_orugas
         self.color_cañon = color_cañon
         self.color_borde = (0, 0, 0)
-    
+
+        self.angulo_torreta = 0.0
+        self.velocidad_giro = 2.5
+
+        self.pos_x = 
+
     def cambiar_tema(self, color_cuerpo=None, color_torreta=None, 
                      color_orugas=None, color_cañon=None):
         """
@@ -42,8 +49,9 @@ class Tanque:
         if color_cañon is not None:
             self.color_cañon = color_cañon
 
-    def draw(self, screen, x, y):
+    def draw(self, screen, x, y, angulo_torreta=0.0):
         s = ESCALA_TANQUE  # usa la constante global
+        centro = Vector2D(x, y)
 
         # Orugas
         pygame.draw.rect(screen, self.color_orugas, (x - 45*s, y - 50*s, 15*s, 100*s))
@@ -59,34 +67,37 @@ class Tanque:
         pygame.draw.polygon(screen, self.color_cuerpo, body)
         pygame.draw.polygon(screen, self.color_borde, body, 2)
 
-        # Torreta
-        turret = [
-            (x - 20*s, y - 10*s),
-            (x - 14*s, y - 20*s),
-            (x + 14*s, y - 20*s),
-            (x + 20*s, y - 10*s),
-            (x + 20*s, y + 10*s),
-            (x + 14*s, y + 20*s),
-            (x - 14*s, y + 20*s),
-            (x - 20*s, y + 10*s)
+        # === TORRETA ===
+        puntos_torreta_locales = [
+            Vector2D(-20*s, -10*s),
+            Vector2D(-14*s, -20*s),
+            Vector2D( 14*s, -20*s),
+            Vector2D( 20*s, -10*s),
+            Vector2D( 20*s,  10*s),
+            Vector2D( 14*s,  20*s),
+            Vector2D(-14*s,  20*s),
+            Vector2D(-20*s,  10*s),
         ]
+
+        turret = [(centro + p.rotate(angulo_torreta)).to_tuple() for p in puntos_torreta_locales]
         pygame.draw.polygon(screen, self.color_torreta, turret)
         pygame.draw.polygon(screen, self.color_borde, turret, 2)
 
-        # Cañón
-        cannon = [
-            (x - 5*s, y - 20*s),
-            (x + 5*s, y - 20*s),
-            (x + 5*s, y - 60*s),
-            (x - 5*s, y - 60*s)
+        # === CAÑÓN ===
+        puntos_canon_locales = [
+            Vector2D(-5*s, -20*s),
+            Vector2D( 5*s, -20*s),
+            Vector2D( 5*s, -60*s),
+            Vector2D(-5*s, -60*s),
         ]
+
+        cannon = [(centro + p.rotate(angulo_torreta)).to_tuple() for p in puntos_canon_locales]
         pygame.draw.polygon(screen, self.color_cañon, cannon)
         pygame.draw.polygon(screen, self.color_borde, cannon, 2)
 
-        # Escotilla
-        pygame.draw.circle(screen, self.color_borde, (x, y), 6*s)
+        # Escotilla (centro)
+        pygame.draw.circle(screen, self.color_borde, centro.to_tuple(), 6*s)
 
-# Temas predefinidos
 TEMA_VERDE = {
     'color_cuerpo': (34, 139, 34),
     'color_torreta': (50, 205, 50),
@@ -114,3 +125,4 @@ TEMA_DESIERTO = {
     'color_orugas': (101, 67, 33),
     'color_cañon': (139, 119, 101)
 }
+print("Hola Mundo")
