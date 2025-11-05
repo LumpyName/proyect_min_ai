@@ -1,17 +1,17 @@
 import pygame
-
-from .vector2d import Vector2D
+import numpy as np
 
 ESCALA_TANQUE = 0.6  # Ajustá este valor (1.0 = tamaño actual)
 
+
 class Tanque:
     """Clase para dibujar y personalizar un tanque con vista aérea"""
-    
-    def __init__(self, color_cuerpo=(34, 139, 34), color_torreta=(50, 205, 50), 
+
+    def __init__(self, color_cuerpo=(34, 139, 34), color_torreta=(50, 205, 50),
                  color_orugas=(0, 0, 0), color_cañon=(128, 128, 128)):
         """
         Inicializa un tanque con colores personalizables
-        
+
         Args:
             color_cuerpo: Color del cuerpo principal (RGB)
             color_torreta: Color de la torreta (RGB)
@@ -27,18 +27,9 @@ class Tanque:
         self.angulo_torreta = 0.0
         self.velocidad_giro = 2.5
 
-
-    def cambiar_tema(self, color_cuerpo=None, color_torreta=None, 
+    def cambiar_tema(self, color_cuerpo=None, color_torreta=None,
                      color_orugas=None, color_cañon=None):
-        """
-        Cambia los colores del tanque
-        
-        Args:
-            color_cuerpo: Nuevo color del cuerpo (RGB) o None para mantener
-            color_torreta: Nuevo color de la torreta (RGB) o None para mantener
-            color_orugas: Nuevo color de las orugas (RGB) o None para mantener
-            color_cañon: Nuevo color del cañón (RGB) o None para mantener
-        """
+        """Cambia los colores del tanque"""
         if color_cuerpo is not None:
             self.color_cuerpo = color_cuerpo
         if color_torreta is not None:
@@ -48,15 +39,22 @@ class Tanque:
         if color_cañon is not None:
             self.color_cañon = color_cañon
 
-    def draw(self, screen, x, y, angulo_torreta=0.0):
-        s = ESCALA_TANQUE  # usa la constante global
-        centro = Vector2D(x, y)
+    def _rotar_punto(self, punto, angulo_grados):
+        """Rota un punto (x, y) alrededor del origen."""
+        rad = np.radians(angulo_grados)
+        rot = np.array([[np.cos(rad), -np.sin(rad)],
+                        [np.sin(rad),  np.cos(rad)]])
+        return rot @ punto  # producto matricial
 
-        # Orugas
+    def draw(self, screen, x, y, angulo_torreta=0.0):
+        s = ESCALA_TANQUE
+        centro = np.array([x, y])
+
+        # === ORUGAS ===
         pygame.draw.rect(screen, self.color_orugas, (x - 45*s, y - 50*s, 15*s, 100*s))
         pygame.draw.rect(screen, self.color_orugas, (x + 30*s, y - 50*s, 15*s, 100*s))
 
-        # Cuerpo
+        # === CUERPO ===
         body = [
             (x - 30*s, y - 50*s),
             (x + 30*s, y - 50*s),
@@ -67,36 +65,35 @@ class Tanque:
         pygame.draw.polygon(screen, self.color_borde, body, 2)
 
         # === TORRETA ===
-        puntos_torreta_locales = [
-            Vector2D(-20*s, -10*s),
-            Vector2D(-14*s, -20*s),
-            Vector2D( 14*s, -20*s),
-            Vector2D( 20*s, -10*s),
-            Vector2D( 20*s,  10*s),
-            Vector2D( 14*s,  20*s),
-            Vector2D(-14*s,  20*s),
-            Vector2D(-20*s,  10*s),
-        ]
+        puntos_torreta_locales = np.array([
+            [-20*s, -10*s],
+            [-14*s, -20*s],
+            [ 14*s, -20*s],
+            [ 20*s, -10*s],
+            [ 20*s,  10*s],
+            [ 14*s,  20*s],
+            [-14*s,  20*s],
+            [-20*s,  10*s],
+        ])
 
-        turret = [(centro + p.rotate(angulo_torreta)).to_tuple() for p in puntos_torreta_locales]
+        turret = [tuple(centro + self._rotar_punto(p, angulo_torreta)) for p in puntos_torreta_locales]
         pygame.draw.polygon(screen, self.color_torreta, turret)
         pygame.draw.polygon(screen, self.color_borde, turret, 2)
 
         # === CAÑÓN ===
-        puntos_canon_locales = [
-            Vector2D(-5*s, -20*s),
-            Vector2D( 5*s, -20*s),
-            Vector2D( 5*s, -60*s),
-            Vector2D(-5*s, -60*s),
-        ]
+        puntos_canon_locales = np.array([
+            [-5*s, -20*s],
+            [ 5*s, -20*s],
+            [ 5*s, -60*s],
+            [-5*s, -60*s],
+        ])
 
-        cannon = [(centro + p.rotate(angulo_torreta)).to_tuple() for p in puntos_canon_locales]
+        cannon = [tuple(centro + self._rotar_punto(p, angulo_torreta)) for p in puntos_canon_locales]
         pygame.draw.polygon(screen, self.color_cañon, cannon)
         pygame.draw.polygon(screen, self.color_borde, cannon, 2)
 
-        # Escotilla (centro)
-        pygame.draw.circle(screen, self.color_borde, centro.to_tuple(), 6*s)
-
+        # === ESCOTILLA ===
+        pygame.draw.circle(screen, self.color_borde, centro.astype(int), int(6*s))
 TEMA_VERDE = {
     'color_cuerpo': (34, 139, 34),
     'color_torreta': (50, 205, 50),
@@ -124,4 +121,3 @@ TEMA_DESIERTO = {
     'color_orugas': (101, 67, 33),
     'color_cañon': (139, 119, 101)
 }
-print("Hola Mundo")
