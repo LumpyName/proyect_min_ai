@@ -27,7 +27,6 @@ class Tanque:
         self.angulo_torreta = 0.0
         self.velocidad_giro = 2.5
 
-        self.pos_x = 
 
     def cambiar_tema(self, color_cuerpo=None, color_torreta=None, 
                      color_orugas=None, color_cañon=None):
