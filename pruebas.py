@@ -1,30 +1,19 @@
 import pygame
 import sys
 import numpy as np
+from tools.tanque import Tanque, TEMA_DESIERTO
 
-from tools.tanque import Tanque, TEMA_DESIERTO 
-
-# Inicializar PyGame
 pygame.init()
-
-# Configuración de la ventana
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tanque Vista Aérea")
 
-# Colores
 WHITE = (255, 255, 255)
 
-# Crear tanque
 tanque1 = Tanque(**TEMA_DESIERTO)
-
-# Posición inicial como vector NumPy
 pos = np.array([WIDTH / 2, HEIGHT / 2], dtype=float)
+VELOCIDAD = 2.5  # píxeles por frame
 
-# Constante de velocidad (pixeles por frame)
-VELOCIDAD = 2.5
-
-# Bucle principal
 clock = pygame.time.Clock()
 running = True
 
@@ -33,45 +22,48 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    dt = clock.get_time() / 1000.0  # delta time en segundos
-
-    # Dirección de movimiento (vector)
-    vel = np.array([0.0, 0.0], dtype=float)
     keys = pygame.key.get_pressed()
 
-    # Rotación de la torreta
-    if keys[pygame.K_LEFT]:
-        tanque1.angulo_torreta -= tanque1.velocidad_giro * dt
-    if keys[pygame.K_RIGHT]:
-        tanque1.angulo_torreta += tanque1.velocidad_giro * dt
+    # === CONTROL DE TORRETA ===
+    if keys[pygame.K_k]:
+        # Girar torreta 1° antihorario
+        tanque1.angulo_torreta = (tanque1.angulo_torreta - 1) % 360
+    elif keys[pygame.K_l]:
+        # Girar torreta 1° horario
+        tanque1.angulo_torreta = (tanque1.angulo_torreta + 1) % 360
 
-    # Movimiento WASD
-    if keys[pygame.K_w]:
-        vel[1] -= 1
-    if keys[pygame.K_s]:
-        vel[1] += 1
+    # === CONTROL DEL CUERPO ===
+    # Rotación manual en 1° por frame
     if keys[pygame.K_a]:
-        vel[0] -= 1
-    if keys[pygame.K_d]:
-        vel[0] += 1
+        tanque1.rotar_cuerpo(-1)
+        tanque1.angulo_torreta = (tanque1.angulo_torreta - 1) % 360
 
-    # Normalizar el vector (mantener velocidad constante en diagonal)
-    mag = np.linalg.norm(vel)
-    if mag != 0:
-        vel = (vel / mag) * VELOCIDAD
+    elif keys[pygame.K_d]:
+        tanque1.rotar_cuerpo(1)
+        tanque1.angulo_torreta = (tanque1.angulo_torreta + 1) % 360
 
-    # Actualizar posición
-    pos += vel
+    # Avance según el ángulo del cuerpo (sin radianes)
+    if keys[pygame.K_w] or keys[pygame.K_s]:
+        # Dirección: frente o atrás (en grados)
+        signo = -1 if keys[pygame.K_s] else 1
 
-    # Limitar dentro de la pantalla
+        # Convertir el ángulo del cuerpo a un vector de dirección
+        angulo = np.radians(tanque1.angulo_cuerpo)
+        dx = np.sin(angulo)
+        dy = -np.cos(angulo)
+
+        pos[0] += dx * VELOCIDAD * signo
+        pos[1] += dy * VELOCIDAD * signo
+
+    # Limitar posición dentro de pantalla
     pos[0] = np.clip(pos[0], 0, WIDTH)
     pos[1] = np.clip(pos[1], 0, HEIGHT)
 
-    # Dibujar
+    # === DIBUJAR ===
     screen.fill(WHITE)
-    tanque1.draw(screen, pos[0], pos[1], tanque1.angulo_torreta)
-
+    tanque1.draw(screen, pos[0], pos[1])
     pygame.display.flip()
+
     clock.tick(60)
 
 pygame.quit()
